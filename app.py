@@ -41,7 +41,7 @@ def explain_code():
     prompt = f"Explain the following Python code in {language}:\n\n{code_snippet}"
 
     headers = {
-        "Authorization": f"Bearer {OPENAI_API_KEY}",  # Use stored API key
+        "Authorization": f"Bearer {OPENAI_API_KEY}",
         "Content-Type": "application/json"
     }
 
@@ -56,8 +56,12 @@ def explain_code():
     }
 
     try:
-        response = requests.post(OPENAI_API_URL, json=payload, headers=headers)
+        print("Sending request to OpenAI...")
+        response = requests.post("https://api.openai.com/v1/chat/completions", json=payload, headers=headers)
+        print("Response received from OpenAI.")
+
         response_json = response.json()
+        print("OpenAI Response:", response_json)  # Debugging output
 
         if "choices" in response_json:
             explanation = response_json["choices"][0]["message"]["content"].strip()
@@ -66,7 +70,9 @@ def explain_code():
             return jsonify({'error': response_json.get("error", "Unknown error occurred")})
 
     except Exception as e:
+        print(f"Error communicating with OpenAI: {str(e)}")  # Debugging output
         return jsonify({'error': str(e)}), 500
+
 
 
 
