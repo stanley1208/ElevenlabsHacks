@@ -81,6 +81,8 @@ def speak_explanation():
     """Converts the AI-generated explanation into speech using ElevenLabs API."""
     data = request.json
     text = data.get('text', '').strip()
+    language = data.get('language', 'English')  # Default to English if not provided
+
 
     if not text:
         print("❌ ERROR: No text provided")
@@ -100,7 +102,7 @@ def speak_explanation():
 
     payload = {
         "text": text,
-        "model_id": "eleven_monolingual_v1",
+        "model_id": "eleven_multilingual_v1",
         "voice_settings": {
             "stability": 0.5,
             "similarity_boost": 0.8
@@ -108,7 +110,7 @@ def speak_explanation():
     }
 
     try:
-        print(f"🔄 Sending request to ElevenLabs API with payload: {payload}")
+        print(f"🔄 Sending request to ElevenLabs API with language: {language}")
 
         response = requests.post(ELEVENLABS_API_URL, json=payload, headers=headers)
 
