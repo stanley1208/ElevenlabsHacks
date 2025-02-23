@@ -2,18 +2,25 @@ from flask import Flask, request, jsonify, render_template
 import requests
 import os
 from elevenlabs import text_to_speech, save
-from APIKEY import apikey1
-from APIKEY import apikey2
 
+from dotenv import load_dotenv
+
+
+# Load API keys from .env file (only for local use)
+load_dotenv()
+
+# Use API keys from environment variables
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
 
 app = Flask(__name__)
 
 # ElevenLabs API Key (keep this safe)
-ELEVENLABS_API_KEY = apikey2
+
 
 # OpenAI API URL (No need to import OpenAI module)
 OPENAI_API_URL = "https://api.openai.com/v1/chat/completions"
-OPENAI_API_KEY = apikey1  # Better to store this in environment variables
+
 
 
 @app.route('/')
@@ -27,17 +34,14 @@ def explain_code():
     data = request.json
     code_snippet = data.get('code', '')
     language = data.get('language', 'English')
-    openai_key = data.get('openaiKey', '')
 
     if not code_snippet:
         return jsonify({'error': 'No code provided'}), 400
-    if not openai_key:
-        return jsonify({'error': 'Missing OpenAI API key'}), 400
 
     prompt = f"Explain the following Python code in {language}:\n\n{code_snippet}"
 
     headers = {
-        "Authorization": f"Bearer {openai_key}",  # Use the user's API key
+        "Authorization": f"Bearer {OPENAI_API_KEY}",  # Use stored API key
         "Content-Type": "application/json"
     }
 
@@ -52,7 +56,7 @@ def explain_code():
     }
 
     try:
-        response = requests.post("https://api.openai.com/v1/chat/completions", json=payload, headers=headers)
+        response = requests.post(OPENAI_API_URL, json=payload, headers=headers)
         response_json = response.json()
 
         if "choices" in response_json:
@@ -66,23 +70,21 @@ def explain_code():
 
 
 
+
 @app.route('/speak', methods=['POST'])
 def speak_explanation():
     """Converts the AI-generated explanation into speech using ElevenLabs API."""
     data = request.json
     text = data.get('text', '')
-    elevenlabs_key = data.get('elevenlabsKey', '')
 
     if not text:
         return jsonify({'error': 'No text provided'}), 400
-    if not elevenlabs_key:
-        return jsonify({'error': 'Missing ElevenLabs API key'}), 400
 
     ELEVENLABS_API_URL = "https://api.elevenlabs.io/v1/text-to-speech/pNInz6obpgDQGcFmaJgB"
 
     headers = {
         "Accept": "audio/mpeg",
-        "xi-api-key": elevenlabs_key,
+        "xi-api-key": ELEVENLABS_API_KEY,  # Use stored API key
         "Content-Type": "application/json"
     }
 
@@ -110,6 +112,7 @@ def speak_explanation():
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 
 
 

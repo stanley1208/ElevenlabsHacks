@@ -71,10 +71,7 @@
     </select>
 
     <form id="codeForm">
-        <h3>Enter Your API Keys</h3>
-        <input type="password" id="openaiKey" placeholder="OpenAI API Key">
-        <input type="password" id="elevenlabsKey" placeholder="ElevenLabs API Key">
-        <p style="font-size: 12px; color: gray;">Your keys are only used locally and not stored.</p>
+
 
         <textarea id="codeInput" placeholder="Paste your Python code here..."></textarea><br>
         <button type="submit">Explain Code</button>
@@ -92,12 +89,7 @@
 
             const code = document.getElementById('codeInput').value;
             const selectedLanguage = document.getElementById('language').value;
-            const openaiKey = document.getElementById('openaiKey').value;
 
-            if (!openaiKey) {
-                alert("Please enter your OpenAI API key.");
-                return;
-            }
 
             const explanationBox = document.getElementById('explanation');
             explanationBox.innerText = "Generating explanation...";
@@ -106,7 +98,8 @@
             const response = await fetch('/explain', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code, language: selectedLanguage, openaiKey })
+                body: JSON.stringify({ code, language: selectedLanguage })
+
             });
 
             const data = await response.json();
@@ -120,12 +113,7 @@
 
         async function playAudio() {
             const explanation = document.getElementById('explanation').innerText;
-            const elevenlabsKey = document.getElementById('elevenlabsKey').value;
 
-            if (!elevenlabsKey) {
-                alert("Please enter your ElevenLabs API key.");
-                return;
-            }
 
             const listenButton = document.getElementById('listenButton');
             listenButton.innerText = "🔄 Generating Voice...";
@@ -134,7 +122,8 @@
             const response = await fetch('/speak', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: explanation, elevenlabsKey })
+                body: JSON.stringify({ text: explanation })
+
             });
 
             const data = await response.json();
