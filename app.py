@@ -90,7 +90,7 @@ def speak_explanation():
         print("❌ ERROR: ElevenLabs API key is missing")
         return jsonify({'error': 'ElevenLabs API key is missing'}), 400
 
-    ELEVENLABS_API_URL = "https://api.elevenlabs.io/v1/text-to-speech/YOUR_VOICE_ID"  # Replace with your actual voice ID
+    ELEVENLABS_API_URL = "https://api.elevenlabs.io/v1/text-to-speech/pNInz6obpgDQGcFmaJgB"  # Replace with your actual voice ID
 
     headers = {
         "Accept": "audio/mpeg",
