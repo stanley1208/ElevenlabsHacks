@@ -2,6 +2,8 @@ from flask import Flask, request, jsonify, render_template
 import requests
 import os
 from elevenlabs import text_to_speech, save
+import traceback  # Import to log full errors
+
 
 from dotenv import load_dotenv
 
@@ -74,23 +76,25 @@ def explain_code():
         return jsonify({'error': str(e)}), 500
 
 
-
-
-
 @app.route('/speak', methods=['POST'])
 def speak_explanation():
     """Converts the AI-generated explanation into speech using ElevenLabs API."""
     data = request.json
-    text = data.get('text', '')
+    text = data.get('text', '').strip()
 
     if not text:
+        print("❌ ERROR: No text provided")
         return jsonify({'error': 'No text provided'}), 400
 
-    ELEVENLABS_API_URL = "https://api.elevenlabs.io/v1/text-to-speech/pNInz6obpgDQGcFmaJgB"
+    if not ELEVENLABS_API_KEY:
+        print("❌ ERROR: ElevenLabs API key is missing")
+        return jsonify({'error': 'ElevenLabs API key is missing'}), 400
+
+    ELEVENLABS_API_URL = "https://api.elevenlabs.io/v1/text-to-speech/YOUR_VOICE_ID"  # Replace with your actual voice ID
 
     headers = {
         "Accept": "audio/mpeg",
-        "xi-api-key": ELEVENLABS_API_KEY,  # Use stored API key
+        "xi-api-key": ELEVENLABS_API_KEY,
         "Content-Type": "application/json"
     }
 
@@ -104,21 +108,29 @@ def speak_explanation():
     }
 
     try:
+        print(f"🔄 Sending request to ElevenLabs API with payload: {payload}")
+
         response = requests.post(ELEVENLABS_API_URL, json=payload, headers=headers)
+
+        print(f"🔄 ElevenLabs API responded with status: {response.status_code}")
+        print(f"🔄 ElevenLabs API response body: {response.text}")
 
         if response.status_code == 200:
             audio_path = "static/explanation.mp3"
+            print("✅ Saving audio file...")
 
             with open(audio_path, "wb") as audio_file:
                 audio_file.write(response.content)
 
             return jsonify({'audio_url': '/' + audio_path})
         else:
+            print(f"❌ ElevenLabs API Error: {response.text}")
             return jsonify({'error': f"ElevenLabs API error: {response.text}"}), 500
 
     except Exception as e:
+        print("❌ Flask Server Error:", str(e))
+        traceback.print_exc()  # This will print the full error traceback
         return jsonify({'error': str(e)}), 500
-
 
 
 
