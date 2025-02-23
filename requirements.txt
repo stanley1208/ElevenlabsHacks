@@ -3,3 +3,4 @@ requests
 openai
 elevenlabs
 gunicorn
+python-dotenv
