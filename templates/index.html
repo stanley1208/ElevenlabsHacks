@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Code Explainer</title>
+    <style>
+        body {
+            background-image: url('static/background.jpg'); /* Make sure the path is correct */
+            background-size: cover;      /* Makes the image cover the full screen */
+            background-position: center; /* Centers the image */
+            background-attachment: fixed; /* Keeps the image fixed while scrolling */
+            color: white; /* Adjust text color for visibility */
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 40px;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        textarea {
+            width: 80%;
+            height: 150px;
+            font-size: 16px;
+            padding: 10px;
+            border: 2px solid #007bff;
+            border-radius: 8px;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #explanation {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 15px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0px 0px 5px #ccc;
+            display: inline-block;
+            max-width: 80%;
+        }
+        #audioPlayer {
+            display: none;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>AI Code Explainer</h1>
+
+    <label for="language">Choose Language:</label>
+    <select id="language">
+        <option value="English">English</option>
+        <option value="Spanish">Spanish</option>
+        <option value="French">French</option>
+        <option value="German">German</option>
+        <option value="Chinese">Chinese</option>
+    </select>
+
+    <form id="codeForm">
+        <h3>Enter Your API Keys</h3>
+        <input type="password" id="openaiKey" placeholder="OpenAI API Key">
+        <input type="password" id="elevenlabsKey" placeholder="ElevenLabs API Key">
+        <p style="font-size: 12px; color: gray;">Your keys are only used locally and not stored.</p>
+
+        <textarea id="codeInput" placeholder="Paste your Python code here..."></textarea><br>
+        <button type="submit">Explain Code</button>
+    </form>
+
+    <h2>Explanation:</h2>
+    <p id="explanation"></p>
+
+    <button id="listenButton" style="display:none;" onclick="playAudio()">🔊 Listen</button>
+    <audio id="audioPlayer" controls></audio>
+
+    <script>
+        document.getElementById('codeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const code = document.getElementById('codeInput').value;
+            const selectedLanguage = document.getElementById('language').value;
+            const openaiKey = document.getElementById('openaiKey').value;
+
+            if (!openaiKey) {
+                alert("Please enter your OpenAI API key.");
+                return;
+            }
+
+            const explanationBox = document.getElementById('explanation');
+            explanationBox.innerText = "Generating explanation...";
+            explanationBox.style.color = "gray";
+
+            const response = await fetch('/explain', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code, language: selectedLanguage, openaiKey })
+            });
+
+            const data = await response.json();
+            explanationBox.innerText = data.explanation || data.error;
+            explanationBox.style.color = "black";
+
+            if (data.explanation) {
+                document.getElementById('listenButton').style.display = "inline";
+            }
+        });
+
+        async function playAudio() {
+            const explanation = document.getElementById('explanation').innerText;
+            const elevenlabsKey = document.getElementById('elevenlabsKey').value;
+
+            if (!elevenlabsKey) {
+                alert("Please enter your ElevenLabs API key.");
+                return;
+            }
+
+            const listenButton = document.getElementById('listenButton');
+            listenButton.innerText = "🔄 Generating Voice...";
+            listenButton.disabled = true;
+
+            const response = await fetch('/speak', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: explanation, elevenlabsKey })
+            });
+
+            const data = await response.json();
+
+            if (data.audio_url) {
+                document.getElementById('audioPlayer').src = data.audio_url;
+                document.getElementById('audioPlayer').style.display = "block";
+                document.getElementById('audioPlayer').play();
+                listenButton.innerText = "🔊 Listen";
+            } else {
+                alert("Error: Unable to generate audio.");
+                listenButton.innerText = "🔊 Listen";
+            }
+
+            listenButton.disabled = false;
+        }
+
+
+    </script>
+</body>
+</html>
