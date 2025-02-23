@@ -119,10 +119,13 @@
             listenButton.innerText = "🔄 Generating Voice...";
             listenButton.disabled = true;
 
+            const selectedLanguage = document.getElementById('language').value;
+
+
             const response = await fetch('/speak', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: explanation })
+                body: JSON.stringify({ text: explanation ,language: selectedLanguage})
 
             });
 
